@@ -1,9 +1,24 @@
-import { createServer } from "node:http";
+import express from "express";
 import { Server } from "socket.io";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const httpServer = createServer();
+// import.meta contains information about the module, such as the module's URL
+const pathToCurrentFile = fileURLToPath(import.meta.url);
+console.log("path to file:", pathToCurrentFile);
+const __dirname = path.dirname(pathToCurrentFile);
 
-const io = new Server(httpServer, {
+const PORT = process.env.port || 3500;
+
+const app = express();
+
+app.use(express.static(path.join(__dirname, "public")));
+
+const expressServer = app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
+});
+
+const io = new Server(expressServer, {
   cors: {
     origin:
       process.env.NODE_ENV === "production"
@@ -23,5 +38,3 @@ io.on("connection", (socket) => {
     io.emit("message", `${socket.id.substring(0, 5)}: ${data}`);
   });
 });
-
-httpServer.listen(3500, () => console.log("Listening on port 3500"));
