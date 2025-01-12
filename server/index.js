@@ -32,9 +32,31 @@ io.on("connection", (socket) => {
   // Every user that connects gets a different ID
   console.log(`User ${socket.id} connected`);
 
-  // A buffer is a global object that provides a way to work with binary data
+  // goes only to the user that just connected
+  socket.emit("message", "Welcome!");
+
+  // goes to all users except the one that just connected
+  socket.broadcast.emit(
+    "message",
+    `User ${socket.id.substring(0, 5)} connected`
+  );
+
+  // Listening for message events
   socket.on("message", (data) => {
     console.log("Data:", data);
     io.emit("message", `${socket.id.substring(0, 5)}: ${data}`);
+  });
+
+  // goes to all other users
+  socket.on("disconnect", () => {
+    socket.broadcast.emit(
+      "message",
+      `User ${socket.id.substring(0, 5)} disconnected`
+    );
+  });
+
+  // Listening for activity
+  socket.on("activity", (name) => {
+    socket.broadcast.emit("activity", name);
   });
 });
